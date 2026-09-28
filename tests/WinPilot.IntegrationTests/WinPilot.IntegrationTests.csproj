@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\WinPilot.Automation\WinPilot.Automation.csproj" />
     <ProjectReference Include="..\..\src\WinPilot.Mcp\WinPilot.Mcp.csproj" />
+    <ProjectReference Include="..\TestApps\WinPilot.TestApps.WinForms\WinPilot.TestApps.WinForms.csproj" />
   </ItemGroup>
 </Project>

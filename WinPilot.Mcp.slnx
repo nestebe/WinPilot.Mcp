@@ -4,4 +4,6 @@
   <Project Path="tests/WinPilot.Automation.Tests/WinPilot.Automation.Tests.csproj" />
   <Project Path="tests/WinPilot.Mcp.Tests/WinPilot.Mcp.Tests.csproj" />
   <Project Path="tests/WinPilot.IntegrationTests/WinPilot.IntegrationTests.csproj" />
+  <Project Path="tests/TestApps/WinPilot.TestApps.WinForms/WinPilot.TestApps.WinForms.csproj" />
+  <Project Path="tests/TestApps/WinPilot.TestApps.Wpf/WinPilot.TestApps.Wpf.csproj" />
 </Solution>
