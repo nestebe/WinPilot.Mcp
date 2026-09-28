@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, test, pack and publish
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore WinPilot.Mcp.slnx
+
+      - name: Check formatting
+        run: dotnet format WinPilot.Mcp.slnx --verify-no-changes --no-restore
+
+      - name: Build (Release)
+        run: dotnet build WinPilot.Mcp.slnx -c Release --no-restore
+
+      - name: Unit tests (WinPilot.Automation.Tests)
+        run: dotnet test tests/WinPilot.Automation.Tests -c Release --no-build
+
+      - name: Unit tests (WinPilot.Mcp.Tests)
+        run: dotnet test tests/WinPilot.Mcp.Tests -c Release --no-build
+
+      - name: Integration tests (WinPilot.IntegrationTests)
+        run: dotnet test tests/WinPilot.IntegrationTests -c Release --no-build
+
+      - name: Pack tool package
+        run: dotnet pack src/WinPilot.Mcp -c Release -o artifacts
+
+      - name: Publish win-x64
+        run: dotnet publish src/WinPilot.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
+
+      - name: Publish win-arm64
+        run: dotnet publish src/WinPilot.Mcp -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-arm64
+
+      - name: Create release archives
+        shell: pwsh
+        run: |
+          $nupkg = Get-ChildItem artifacts -Filter 'WinPilot.Mcp.*.nupkg' | Select-Object -First 1
+          if (-not $nupkg) { throw 'Tool package not found in artifacts.' }
+          $version = $nupkg.BaseName.Substring('WinPilot.Mcp.'.Length)
+          foreach ($rid in @('win-x64', 'win-arm64')) {
+            Compress-Archive -Path "publish/$rid/*" -DestinationPath "artifacts/WinPilot.Mcp-$rid-$version.zip" -Force
+          }
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = @(Get-ChildItem artifacts -File | Where-Object { $_.Extension -in '.nupkg', '.zip' } | ForEach-Object { $_.FullName })
+          gh release create "${{ github.ref_name }}" @assets --generate-notes

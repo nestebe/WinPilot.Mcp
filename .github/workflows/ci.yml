@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test-pack:
+    name: Build, test and pack
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore WinPilot.Mcp.slnx
+
+      - name: Check formatting
+        run: dotnet format WinPilot.Mcp.slnx --verify-no-changes --no-restore
+
+      - name: Build (Release)
+        run: dotnet build WinPilot.Mcp.slnx -c Release --no-restore
+
+      - name: Unit tests (WinPilot.Automation.Tests)
+        run: dotnet test tests/WinPilot.Automation.Tests -c Release --no-build
+
+      - name: Unit tests (WinPilot.Mcp.Tests)
+        run: dotnet test tests/WinPilot.Mcp.Tests -c Release --no-build
+
+      - name: Integration tests (WinPilot.IntegrationTests)
+        run: dotnet test tests/WinPilot.IntegrationTests -c Release --no-build
+
+      - name: Pack tool package
+        run: dotnet pack src/WinPilot.Mcp -c Release -o artifacts
+
+      - name: Upload nupkg
+        uses: actions/upload-artifact@v4
+        with:
+          name: winpilot-mcp-nupkg
+          path: artifacts/*.nupkg
+          if-no-files-found: error
