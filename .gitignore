@@ -1,0 +1,40 @@
+## .NET build artifacts
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+coverage*.xml
+coverage*.json
+
+## NuGet / tooling
+*.nupkg
+*.snupkg
+packages/
+!**/packages/build/
+.vs/
+.vscode/
+.idea/
+
+## Publish output
+publish/
+artifacts/
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Local environment
+*.local.json
+appsettings.Development.json
