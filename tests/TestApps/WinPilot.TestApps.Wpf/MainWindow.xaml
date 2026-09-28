@@ -1,0 +1,71 @@
+<Window x:Class="WinPilot.TestApps.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinPilot WPF Test App"
+        Width="560"
+        Height="440">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem x:Name="mnuFile" Header="File">
+        <MenuItem x:Name="mnuExit" Header="Exit" Click="OnExitClick" />
+      </MenuItem>
+    </Menu>
+    <Grid Margin="12">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <TextBox x:Name="txtName" Grid.Row="0" Grid.Column="0" Width="200" VerticalAlignment="Center" />
+      <Button x:Name="btnHello" Grid.Row="0" Grid.Column="1" Content="Hello" Margin="8,0,0,0" Click="OnHelloClick" />
+
+      <TextBlock x:Name="lblResult" Grid.Row="1" Grid.ColumnSpan="3" Text="Result" Margin="0,8,0,0" />
+
+      <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,8,0,0">
+        <Button x:Name="btnHang" Content="Hang UI" Click="OnHangClick" />
+        <Button x:Name="btnShowLater" Content="Show Later" Margin="8,0,0,0" Click="OnShowLaterClick" />
+        <Button x:Name="btnLate" Content="Late" Margin="8,0,0,0" Visibility="Collapsed" />
+      </StackPanel>
+
+      <CheckBox x:Name="chkOption" Grid.Row="3" Grid.ColumnSpan="3" Content="Option" Margin="0,8,0,0" />
+
+      <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,8,0,0">
+        <RadioButton x:Name="radA" Content="Radio A" />
+        <RadioButton x:Name="radB" Content="Radio B" Margin="8,0,0,0" />
+      </StackPanel>
+
+      <ComboBox x:Name="cboChoice" Grid.Row="5" Width="120" HorizontalAlignment="Left" Margin="0,8,0,0">
+        <ComboBoxItem Content="One" />
+        <ComboBoxItem Content="Two" />
+      </ComboBox>
+
+      <StackPanel Grid.Row="6" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,8,0,0">
+        <ListBox x:Name="lstItems" Width="120" Height="100">
+          <ListBoxItem Content="Alpha" />
+          <ListBoxItem Content="Beta" />
+        </ListBox>
+        <TreeView x:Name="treeItems" Width="150" Height="100" Margin="8,0,0,0">
+          <TreeViewItem Header="Root">
+            <TreeViewItem Header="Child" />
+          </TreeViewItem>
+        </TreeView>
+      </StackPanel>
+
+      <TabControl x:Name="tabMain" Grid.Row="7" Grid.ColumnSpan="3" Margin="0,8,0,0" Height="90">
+        <TabItem x:Name="tabFirst" Header="Tab 1" />
+        <TabItem x:Name="tabSecond" Header="Tab 2" />
+      </TabControl>
+    </Grid>
+  </DockPanel>
+</Window>
