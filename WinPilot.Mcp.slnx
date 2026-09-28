@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/WinPilot.Automation/WinPilot.Automation.csproj" />
+  <Project Path="src/WinPilot.Mcp/WinPilot.Mcp.csproj" />
+  <Project Path="tests/WinPilot.Automation.Tests/WinPilot.Automation.Tests.csproj" />
+  <Project Path="tests/WinPilot.Mcp.Tests/WinPilot.Mcp.Tests.csproj" />
+  <Project Path="tests/WinPilot.IntegrationTests/WinPilot.IntegrationTests.csproj" />
+</Solution>

@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped:warning
+
+[*.{json,yml,yaml,csproj,props,targets,slnx}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# The server is an English-only CLI tool: literals are intentional, not localizable.
+dotnet_diagnostic.CA1303.severity = none
+# Low-volume logging: source-generated LoggerMessage delegates are not required.
+dotnet_diagnostic.CA1848.severity = suggestion
+# ConfigureAwait(false) is not mandatory for this app/library pairing.
+dotnet_diagnostic.CA2007.severity = suggestion

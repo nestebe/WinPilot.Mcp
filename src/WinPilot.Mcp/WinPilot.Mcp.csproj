@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>winpilot-mcp</AssemblyName>
+    <RootNamespace>WinPilot.Mcp</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>winpilot-mcp</ToolCommandName>
+    <PackageId>WinPilot.Mcp</PackageId>
+    <Description>MCP server for Windows desktop automation (UI Automation / FlaUI)</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="MinVer" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinPilot.Automation\WinPilot.Automation.csproj" />
+  </ItemGroup>
+</Project>
