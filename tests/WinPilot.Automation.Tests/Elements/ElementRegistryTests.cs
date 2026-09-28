@@ -84,6 +84,29 @@ public class ElementRegistryTests
     }
 
     [Fact]
+    public void Register_preserving_snapshot_starts_a_snapshot_when_none_exists()
+    {
+        var registry = new ElementRegistry<FakeElement>();
+
+        var refId = registry.RegisterPreservingSnapshot("w1", new FakeElement("a"), Fingerprint);
+
+        Assert.Equal("w1e1", refId);
+        Assert.Equal(ElementLookupStatus.Found, registry.Find(refId).Status);
+    }
+
+    [Fact]
+    public void Register_preserving_snapshot_continues_the_current_snapshot()
+    {
+        var registry = new ElementRegistry<FakeElement>();
+        registry.BeginSnapshot("w1");
+        _ = registry.Register("w1", new FakeElement("a"), Fingerprint);
+
+        var refId = registry.RegisterPreservingSnapshot("w1", new FakeElement("b"), Fingerprint);
+
+        Assert.Equal("w1e2", refId);
+    }
+
+    [Fact]
     public void Windows_have_independent_versions_and_counters()
     {
         var registry = new ElementRegistry<FakeElement>();

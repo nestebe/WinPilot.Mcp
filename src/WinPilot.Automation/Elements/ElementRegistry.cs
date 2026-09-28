@@ -59,6 +59,20 @@ internal sealed class ElementRegistry<TElement>
         return version;
     }
 
+    /// <summary>
+    /// Registers an element into the current snapshot, starting a snapshot when the window none yet.
+    /// Used by wait-for lookups so refs coexist with the previous snapshot's refs.
+    /// </summary>
+    public string RegisterPreservingSnapshot(string windowHandle, TElement element, ElementFingerprint fingerprint)
+    {
+        if (_versions.GetValueOrDefault(windowHandle) == 0)
+        {
+            BeginSnapshot(windowHandle);
+        }
+
+        return Register(windowHandle, element, fingerprint);
+    }
+
     /// <summary>Registers an element in the current snapshot and returns its reference.</summary>
     public string Register(string windowHandle, TElement element, ElementFingerprint fingerprint)
     {

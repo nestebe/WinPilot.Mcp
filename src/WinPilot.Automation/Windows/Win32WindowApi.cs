@@ -59,6 +59,9 @@ internal static class Win32WindowApi
     /// <summary>Returns whether the native window still exists.</summary>
     public static bool IsWindowAlive(IntPtr hwnd) => IsWindow(hwnd);
 
+    /// <summary>Returns the current foreground window handle.</summary>
+    public static IntPtr GetForegroundWindow() => GetForegroundWindowNative();
+
     /// <summary>Posts a graceful close message to the window.</summary>
     public static bool TryClose(IntPtr hwnd) => PostMessage(hwnd, WmClose, IntPtr.Zero, IntPtr.Zero);
 
@@ -131,6 +134,9 @@ internal static class Win32WindowApi
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool IsWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll", EntryPoint = "GetForegroundWindow", SetLastError = true)]
+    private static extern IntPtr GetForegroundWindowNative();
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
