@@ -19,11 +19,15 @@ internal static class ToolErrors
 
     /// <summary>Maps a typed engine failure to an actionable error result.</summary>
     public static CallToolResult ToErrorResult(WinPilotException exception)
+        => Error(FormatError(exception));
+
+    /// <summary>Formats a typed engine failure as <c>CODE: message (hint)</c>.</summary>
+    public static string FormatError(WinPilotException exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         var hint = string.IsNullOrWhiteSpace(exception.Hint) ? string.Empty : $" ({exception.Hint})";
-        return Error($"{CodeToText(exception.Code)}: {exception.Message}{hint}");
+        return $"{CodeToText(exception.Code)}: {exception.Message}{hint}";
     }
 
     /// <summary>Maps an unexpected failure to a generic provider error result.</summary>
