@@ -16,9 +16,6 @@ public sealed class McpServerAssembly
     public static string InformationalVersion
         => typeof(McpServerAssembly).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
            ?? "0.0.0";
-
-    /// <summary>Gets the assembly file path of the server.</summary>
-    public static string AssemblyPath => typeof(McpServerAssembly).Assembly.Location;
 }
 
 /// <summary>Enables per-monitor DPI awareness so UI Automation coordinates match real pixels.</summary>

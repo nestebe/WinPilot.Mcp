@@ -1,0 +1,8 @@
+# Normalize line endings to LF on checkout and in the repository, on every platform.
+* text=auto eol=lf
+
+# Windows binaries and archives are not text.
+*.png binary
+*.ico binary
+*.zip binary
+*.nupkg binary
