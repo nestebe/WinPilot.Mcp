@@ -39,19 +39,35 @@ WinPilot.Mcp gives AI agents a Playwright-style workflow for Windows desktop app
 
 ## Install
 
+Installing the server and registering it with your MCP client are **two separate steps** — every
+option below needs the client entry shown in [Configure your MCP client](#configure-your-mcp-client).
+
 ### Option 1 — NuGet.org (recommended)
+
+**Step 1 — install the server command** (once):
 
 ```powershell
 dotnet tool install -g WinPilot.Mcp
 ```
 
-With the .NET 10 SDK you can even skip the install — `dnx` fetches and runs the tool on first use:
+This only puts the `winpilot-mcp` command on your PATH; it does not touch any MCP client.
 
-```powershell
-dotnet dnx WinPilot.Mcp
+**Step 2 — add the server to your client** (opencode example):
+
+```jsonc
+"mcp": {
+  "winpilot": {
+    "type": "local",
+    "command": ["winpilot-mcp"]
+  }
+}
 ```
 
-The server is then available as `winpilot-mcp`, and the opencode snippet below works as-is.
+That's it. The other clients (VS Code, Claude Desktop) use the same entry with their own file layout.
+
+> **No install at all:** with the .NET 10 SDK you can skip step 1 entirely — `dnx` runs the published
+> package directly. Use `"command": ["dotnet", "dnx", "WinPilot.Mcp"]` instead; it downloads and caches
+> the server on first use (~2 s, then instant).
 
 ### Option 2 — one-liner installers from this repository
 
@@ -67,7 +83,7 @@ irm https://raw.githubusercontent.com/nestebe/WinPilot.Mcp/main/install-exe.ps1 
 ```
 
 extracts `winpilot-mcp.exe` to `%LOCALAPPDATA%\WinPilot.Mcp` and prints the config snippet.
-Both scripts are re-runnable to update.
+Both scripts are re-runnable to update — then add the printed entry to your MCP client (step 2 above).
 
 ### Option 3 — manual downloads
 
