@@ -14,7 +14,7 @@ public class WinPilotOptionsTests
         Assert.Equal(10, options.SnapshotMaxDepth);
         Assert.Equal(2000, options.SnapshotMaxNodes);
         Assert.Equal(10_000, options.SnapshotTimeBudgetMs);
-        Assert.Equal(10_000, options.LaunchWindowTimeoutMs);
+        Assert.Equal(15_000, options.LaunchWindowTimeoutMs);
         Assert.Equal(5_000, options.CloseWindowTimeoutMs);
         Assert.Equal(10_000, options.WaitForElementTimeoutMs);
         Assert.False(options.KeepAppsOnExit);

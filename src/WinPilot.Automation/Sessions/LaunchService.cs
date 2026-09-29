@@ -61,6 +61,8 @@ internal sealed class LaunchService
         Action<Process>? onProcessStarted,
         CancellationToken cancellationToken)
     {
+        var baseline = _windowEnumerator().Select(window => window.Hwnd).ToHashSet();
+
         var startInfo = new ProcessStartInfo(app)
         {
             UseShellExecute = false,
@@ -79,9 +81,13 @@ internal sealed class LaunchService
         onProcessStarted?.Invoke(process);
 
         var window = await PollAsync(
-            () => FindFirst(w => w.ProcessId == process.Id),
+            () => FindFirst(candidate => candidate.ProcessId == process.Id),
             timeoutMs,
             cancellationToken).ConfigureAwait(false);
+
+        // Packaged apps and launcher stubs (for example Windows 11 Notepad) can produce their
+        // window in a different process; accept the first new top-level window as a fallback.
+        window ??= FindFirst(candidate => !baseline.Contains(candidate.Hwnd));
 
         if (window is null)
         {

@@ -56,6 +56,27 @@ public class LaunchServiceTests
     }
 
     [Fact]
+    public async Task Packaged_app_window_in_another_process_is_found_by_baseline_diff()
+    {
+        var existing = new RawWindow(new IntPtr(1), "Existing", 10);
+        var newWindow = new RawWindow(new IntPtr(2), "Packaged App", 99); // different process: launcher stub
+        var polls = 0;
+        var launcher = new LaunchService(
+            processStarter: _ => CurrentProcess,
+            windowEnumerator: () =>
+            {
+                polls++;
+                return polls < 3 ? [existing] : [existing, newWindow];
+            },
+            delay: (_, _) => Task.CompletedTask);
+
+        var result = await launcher.LaunchAndWaitAsync("alias.exe", null, timeoutMs: 5_000, cancellationToken: CancellationToken.None);
+
+        Assert.Equal(new IntPtr(2), result.Window.Hwnd);
+        Assert.Equal(99, result.Window.ProcessId);
+    }
+
+    [Fact]
     public async Task Non_positive_timeouts_are_rejected_as_invalid_arguments()
     {
         var launcher = new LaunchService(

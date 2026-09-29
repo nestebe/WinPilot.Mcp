@@ -144,7 +144,7 @@ All settings are optional; environment variables use the `WINPILOT_` prefix. An 
 | `WINPILOT_SNAPSHOT_MAX_DEPTH` | 10 | Default snapshot depth |
 | `WINPILOT_SNAPSHOT_MAX_NODES` | 2000 | Snapshot node budget |
 | `WINPILOT_SNAPSHOT_TIME_BUDGET_MS` | 10000 | Snapshot time budget |
-| `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS` | 10000 | Launch → window wait |
+| `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS` | 15000 | Launch → window wait |
 | `WINPILOT_CLOSE_WINDOW_TIMEOUT_MS` | 5000 | Graceful close wait |
 | `WINPILOT_WAIT_FOR_ELEMENT_TIMEOUT_MS` | 10000 | Default `windows_wait_for` timeout |
 | `WINPILOT_KEEP_APPS_ON_EXIT` | false | Don't close apps launched by the server |

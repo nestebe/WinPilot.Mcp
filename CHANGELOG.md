@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-29
+
+### Fixed
+
+- Launch discovery now falls back to baseline window diffing when no window appears for the
+  launched process id — packaged apps and launcher stubs (for example Windows 11 Notepad) that
+  create their window in another process are found reliably.
+- Default launch window timeout raised from 10 s to 15 s: packaged-app cold starts can exceed
+  the old default on first launch.
+
 ## [0.1.0] - 2026-09-28
 
 Initial release: an MCP server for Windows desktop automation with accessibility snapshots and element refs.

@@ -28,8 +28,8 @@ public sealed class WinPilotOptions
     /// <summary>Gets or sets the snapshot time budget, in milliseconds. Default: 10000.</summary>
     public int SnapshotTimeBudgetMs { get; set; } = 10_000;
 
-    /// <summary>Gets or sets the timeout for waiting for a launched app window, in milliseconds. Default: 10000.</summary>
-    public int LaunchWindowTimeoutMs { get; set; } = 10_000;
+    /// <summary>Gets or sets the timeout for waiting for a launched app window, in milliseconds. Default: 15000.</summary>
+    public int LaunchWindowTimeoutMs { get; set; } = 15_000;
 
     /// <summary>Gets or sets the timeout for a graceful window close, in milliseconds. Default: 5000.</summary>
     public int CloseWindowTimeoutMs { get; set; } = 5_000;

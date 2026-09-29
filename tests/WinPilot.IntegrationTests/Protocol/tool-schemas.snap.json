@@ -217,7 +217,7 @@
             "default": null
           },
           "timeoutMs": {
-            "description": "Optional timeout in milliseconds to wait for the app window (default 10000).",
+            "description": "Optional timeout in milliseconds to wait for the app window (default 15000).",
             "type": [
               "integer",
               "null"

@@ -16,7 +16,7 @@ public sealed class WindowTools(IWindowsAutomation automation)
     public async Task<CallToolResult> LaunchAsync(
         [Description("Executable path or UWP app id, e.g. 'calc.exe' or 'Microsoft.WindowsCalculator_8wekyb3d8bbwe!App'.")] string app,
         [Description("Optional command line arguments.")] IReadOnlyList<string>? args = null,
-        [Description("Optional timeout in milliseconds to wait for the app window (default 10000).")] int? timeoutMs = null,
+        [Description("Optional timeout in milliseconds to wait for the app window (default 15000).")] int? timeoutMs = null,
         CancellationToken cancellationToken = default)
     {
         try

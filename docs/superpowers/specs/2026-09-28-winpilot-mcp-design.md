@@ -104,7 +104,7 @@ Window-level operations do not need UIA; they use native Win32 and run **off the
 - `windows_list_windows`: `EnumWindows` + `GetWindowText` + `GetWindowThreadProcessId`, skipping invisible, tool (`WS_EX_TOOLWINDOW`) and DWM-cloaked windows. Never blocks on providers.
 - `windows_close`: `PostMessage(WM_CLOSE)` + wait-until-gone; optional `force` kills the process tree if the app was launched by this server.
 - `windows_focus`: `ShowWindow(SW_RESTORE)` + `SetForegroundWindow`, fallback to UIA `Focus()` on the worker.
-- Launch window discovery: poll `EnumWindows` for the launched PID (direct launch) with a timeout (default 10 s, `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS`), 100 ms interval, honoring cancellation. UWP/shell launches fall back to baseline diffing of visible windows.
+- Launch window discovery: poll `EnumWindows` for the launched PID (direct launch) with a timeout (default 15 s, `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS`), 100 ms interval, honoring cancellation. Packaged apps and launcher stubs (for example Windows 11 Notepad) fall back to baseline diffing of visible windows.
 
 ### 3.3 Sessions, windows, processes
 
@@ -177,7 +177,7 @@ Bound via `IOptions` from optional `appsettings.json` + environment variables (`
 | SnapshotMaxDepth | `WINPILOT_SNAPSHOT_MAX_DEPTH` | 10 |
 | SnapshotMaxNodes | `WINPILOT_SNAPSHOT_MAX_NODES` | 2000 |
 | SnapshotTimeBudgetMs | `WINPILOT_SNAPSHOT_TIME_BUDGET_MS` | 10000 |
-| LaunchWindowTimeoutMs | `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS` | 10000 |
+| LaunchWindowTimeoutMs | `WINPILOT_LAUNCH_WINDOW_TIMEOUT_MS` | 15000 |
 | KeepAppsOnExit | `WINPILOT_KEEP_APPS_ON_EXIT` | false |
 | LogLevel | `WINPILOT_LOG_LEVEL` | Warning |
 | LogFile | `WINPILOT_LOG_FILE` | (none) |
@@ -259,4 +259,4 @@ MIT. `LICENSE` carries the project license; third-party dependencies (FlaUI) are
 - `windows_wait_for` added; `force` on close; `sendKeys`/`getText` in batch.
 - xunit v3 family; MinVer; CPM; warnings-as-errors; no StyleCop.
 - No production test hooks: wedging is tested with the real test-app "hang" button.
-- Defaults: soft 30 s / hard 90 s; snapshot depth 10 / nodes 2000 / budget 10 s; launch window timeout 10 s.
+- Defaults: soft 30 s / hard 90 s; snapshot depth 10 / nodes 2000 / budget 10 s; launch window timeout 15 s.
