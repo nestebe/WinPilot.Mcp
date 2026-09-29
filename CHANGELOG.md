@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-09-29
+
+### Added
+
+- One-liner installers: `install.ps1` (.NET tool) and `install-exe.ps1` (self-contained executable),
+  both served from the repository and re-runnable to update.
+- Publication to NuGet.org via trusted publishing (OIDC, no stored secrets).
+
 ## [0.1.3] - 2026-09-29
 
 ### Fixed
