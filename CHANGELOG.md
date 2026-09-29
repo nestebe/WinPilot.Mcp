@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-09-29
+
+### Added
+
+- Elevated-app detection: interacting with an administrator app from a non-elevated server now
+  fails fast with an actionable `UI_PROVIDER_ERROR` ("run your MCP client elevated...") instead of
+  returning a misleading near-empty accessibility tree. Windows UIPI silently blocks UI Automation
+  across integrity levels; WinPilot now detects it up front.
+
 ## [0.1.4] - 2026-09-29
 
 ### Added

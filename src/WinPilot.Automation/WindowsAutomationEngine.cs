@@ -369,6 +369,13 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
                 "Run windows_list_windows to see available windows.");
         }
 
+        if (Win32WindowApi.IsInteractionBlocked(info.ProcessId))
+        {
+            throw new UiProviderException(
+                $"Window {info.Handle} belongs to '{info.ProcessName ?? "an application"}' running elevated (as administrator); Windows blocks UI Automation interaction from this non-elevated server.",
+                "Run your MCP client (and this server) elevated to control administrator apps, or start the target app without administrator rights.");
+        }
+
         try
         {
             return context.Automation.FromHandle(info.Hwnd).AsWindow();

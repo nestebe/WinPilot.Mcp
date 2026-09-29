@@ -16,6 +16,11 @@ internal static class Win32WindowApi
     private const int DwmwaCloaked = 14;
     private const uint WmClose = 0x0010;
     private const int SwRestore = 9;
+    private const uint ProcessQueryLimitedInformation = 0x1000;
+    private const uint TokenQuery = 0x0008;
+    private const int TokenElevationClass = 20;
+
+    private static readonly Lazy<bool> IsSelfElevated = new(DetectSelfElevation);
 
     private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
@@ -61,6 +66,62 @@ internal static class Win32WindowApi
 
     /// <summary>Returns the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindow() => GetForegroundWindowNative();
+
+    /// <summary>
+    /// Returns whether Windows blocks UI Automation interaction with the process (for example an
+    /// elevated app viewed from a non-elevated server): UIPI silently returns an empty tree.
+    /// </summary>
+    public static bool IsInteractionBlocked(int processId)
+    {
+        var process = OpenProcess(ProcessQueryLimitedInformation, false, processId);
+        if (process == IntPtr.Zero)
+        {
+            return true; // protected process or different user: not automatable from here
+        }
+
+        try
+        {
+            if (!OpenProcessToken(process, TokenQuery, out var token))
+            {
+                return true; // access denied (typically: the target is elevated and we are not)
+            }
+
+            try
+            {
+                if (!GetTokenInformation(token, TokenElevationClass, out var elevated, sizeof(int), out _))
+                {
+                    return true;
+                }
+
+                return elevated != 0 && !IsSelfElevated.Value;
+            }
+            finally
+            {
+                _ = CloseHandle(token);
+            }
+        }
+        finally
+        {
+            _ = CloseHandle(process);
+        }
+    }
+
+    private static bool DetectSelfElevation()
+    {
+        if (!OpenProcessToken(GetCurrentProcess(), TokenQuery, out var token))
+        {
+            return false;
+        }
+
+        try
+        {
+            return GetTokenInformation(token, TokenElevationClass, out var elevated, sizeof(int), out _) && elevated != 0;
+        }
+        finally
+        {
+            _ = CloseHandle(token);
+        }
+    }
 
     /// <summary>Posts a graceful close message to the window.</summary>
     public static bool TryClose(IntPtr hwnd) => PostMessage(hwnd, WmClose, IntPtr.Zero, IntPtr.Zero);
@@ -192,4 +253,22 @@ internal static class Win32WindowApi
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, int processId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr handle);
+
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetCurrentProcess();
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool OpenProcessToken(IntPtr process, uint access, out IntPtr token);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetTokenInformation(IntPtr token, int informationClass, out int information, int informationLength, out int returnLength);
 }

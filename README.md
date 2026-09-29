@@ -205,6 +205,7 @@ All settings are optional; environment variables use the `WINPILOT_` prefix. An 
 - `windows_screenshot` `background: true` requires a window handle and falls back to a normal capture when Windows returns a blank frame.
 - `savePath` accepts absolute local `.png` paths only; existing files are not replaced unless `overwrite: true`.
 - Works with apps that support UI Automation (Win32, WinForms, WPF, UWP). Electron apps depend on their accessibility support; games typically don't work.
+- Apps running **as administrator** (elevated) cannot be automated from a non-elevated server: Windows blocks UI Automation across integrity levels (UIPI). WinPilot detects this and returns an actionable error — run your MCP client (and therefore the server) elevated to control administrator apps.
 - Integration tests require an interactive desktop session and skip themselves otherwise.
 
 ## Building from source
