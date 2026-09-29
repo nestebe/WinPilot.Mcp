@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-29
+
+### Fixed
+
+- When a packaged app or launcher stub creates its window in a different process, that process
+  is now tracked as owned too: `windows_close` with `force: true` and shutdown cleanup can
+  close the real app (for example Windows 11 Notepad launched from `notepad.exe`).
+
 ## [0.1.1] - 2026-09-29
 
 ### Fixed

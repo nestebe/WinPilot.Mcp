@@ -18,6 +18,7 @@ internal sealed class SessionManager : IDisposable
     private readonly Func<IntPtr, bool> _tryClose;
     private readonly Func<IntPtr, bool> _tryFocus;
     private readonly Action<Process> _processKiller;
+    private readonly Func<int, Process?> _processLookup;
     private readonly TimeSpan _closePollInterval;
     private readonly Dictionary<int, Process> _ownedProcesses = [];
     private readonly object _gate = new();
@@ -31,7 +32,8 @@ internal sealed class SessionManager : IDisposable
         Func<IntPtr, bool>? tryClose = null,
         Func<IntPtr, bool>? tryFocus = null,
         Action<Process>? processKiller = null,
-        TimeSpan? closePollInterval = null)
+        TimeSpan? closePollInterval = null,
+        Func<int, Process?>? processLookup = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(launcher);
@@ -44,6 +46,7 @@ internal sealed class SessionManager : IDisposable
         _tryFocus = tryFocus ?? Win32WindowApi.TryFocus;
         _processKiller = processKiller ?? (static process => process.Kill(entireProcessTree: true));
         _closePollInterval = closePollInterval ?? TimeSpan.FromMilliseconds(100);
+        _processLookup = processLookup ?? LookupProcess;
     }
 
     /// <summary>Gets the window registry for read access.</summary>
@@ -60,11 +63,20 @@ internal sealed class SessionManager : IDisposable
             .LaunchAndWaitAsync(app, args, timeoutMs ?? _options.LaunchWindowTimeoutMs, TrackProcess, cancellationToken)
             .ConfigureAwait(false);
 
-        return Windows.RegisterOrGet(
+        var info = Windows.RegisterOrGet(
             result.Window.Hwnd,
             result.Window.Title,
             result.Window.ProcessId,
             Win32WindowApi.GetProcessName(result.Window.ProcessId));
+
+        if (result.Window.ProcessId != result.Process?.Id)
+        {
+            // Packaged apps and launcher stubs create their window in a different process;
+            // we started that app, so track the window's process for force-close and shutdown.
+            TrackProcessById(result.Window.ProcessId);
+        }
+
+        return info;
     }
 
     /// <summary>Enumerates top-level windows, refreshes the registry, and prunes dead windows.</summary>
@@ -213,6 +225,30 @@ internal sealed class SessionManager : IDisposable
         lock (_gate)
         {
             _ownedProcesses[process.Id] = process;
+        }
+    }
+
+    private void TrackProcessById(int processId)
+    {
+        var process = _processLookup(processId);
+        if (process is not null)
+        {
+            lock (_gate)
+            {
+                _ownedProcesses[processId] = process;
+            }
+        }
+    }
+
+    private static Process? LookupProcess(int processId)
+    {
+        try
+        {
+            return Process.GetProcessById(processId);
+        }
+        catch (ArgumentException)
+        {
+            return null; // the process already exited
         }
     }
 }

@@ -36,7 +36,7 @@ public class SessionManagerTests
                 delay: (_, _) => Task.CompletedTask);
         }
 
-        public SessionManager CreateManager(bool keepAppsOnExit = false)
+        public SessionManager CreateManager(bool keepAppsOnExit = false, Func<int, Process?>? processLookup = null)
         {
             var options = new WinPilotOptions { KeepAppsOnExit = keepAppsOnExit, CloseWindowTimeoutMs = 50 };
             return new SessionManager(
@@ -60,7 +60,8 @@ public class SessionManagerTests
                     return TryFocusResult;
                 },
                 processKiller: Killed.Add,
-                closePollInterval: TimeSpan.FromMilliseconds(5));
+                closePollInterval: TimeSpan.FromMilliseconds(5),
+                processLookup: processLookup);
         }
     }
 
@@ -201,6 +202,30 @@ public class SessionManagerTests
         keeping.Shutdown();
         keeping.Dispose();
         Assert.Empty(harness.Killed);
+    }
+
+    [Fact]
+    public async Task Launch_through_a_launcher_stub_also_tracks_the_window_process()
+    {
+        var calls = 0;
+        var packagedWindow = new RawWindow(new IntPtr(1), "Packaged", 99); // window owned by another process
+        var launcher = new LaunchService(
+            processStarter: _ => CurrentProcess,
+            windowEnumerator: () => Interlocked.Increment(ref calls) == 1 ? [] : [packagedWindow],
+            delay: (_, _) => Task.CompletedTask);
+        var options = new WinPilotOptions { CloseWindowTimeoutMs = 50 };
+        using var manager = new SessionManager(
+            options,
+            launcher,
+            windowEnumerator: () => [packagedWindow],
+            isWindowAlive: _ => true,
+            processKiller: _ => { },
+            processLookup: pid => pid == 99 ? CurrentProcess : null);
+
+        var info = await manager.LaunchAsync("alias.exe", null, timeoutMs: 1, CancellationToken.None);
+
+        Assert.Equal(99, info.ProcessId);
+        Assert.True(manager.IsOwned(99), "the window's process must be tracked when a launcher stub produced the window");
     }
 
     [Fact]
