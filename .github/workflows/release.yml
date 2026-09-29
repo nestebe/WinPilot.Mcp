@@ -12,6 +12,9 @@ jobs:
     name: Build, test, pack and publish
     runs-on: windows-latest
     timeout-minutes: 90
+    env:
+      # Mapped here because the 'secrets' context is not available in step-level 'if' expressions.
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,8 +48,8 @@ jobs:
         run: dotnet pack src/WinPilot.Mcp -c Release -o artifacts
 
       - name: Publish to NuGet.org
-        if: ${{ secrets.NUGET_API_KEY != '' }}
-        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        if: ${{ env.NUGET_API_KEY != '' }}
+        run: dotnet nuget push artifacts/*.nupkg --api-key "$env:NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish win-x64
         run: dotnet publish src/WinPilot.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
