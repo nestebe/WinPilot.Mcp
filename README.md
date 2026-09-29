@@ -39,7 +39,22 @@ WinPilot.Mcp gives AI agents a Playwright-style workflow for Windows desktop app
 
 ## Install
 
-### Option 1 — .NET tool from the GitHub release (recommended)
+### Option 1 — one-liner from GitHub (recommended)
+
+```powershell
+irm https://raw.githubusercontent.com/nestebe/WinPilot.Mcp/main/install.ps1 | iex
+```
+
+Downloads the latest [release](https://github.com/nestebe/WinPilot.Mcp/releases) and installs the .NET tool.
+Re-run the same command to update. The server is then available as `winpilot-mcp`, and the opencode
+snippet below works as-is.
+
+> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org
+> (maintainers: add a `NUGET_API_KEY` repository secret — the release workflow publishes
+> automatically), `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
+> `dotnet dnx WinPilot.Mcp` runs the server without installing anything at all.
+
+### Option 2 — manual .NET tool install
 
 1. Download `WinPilot.Mcp.<version>.nupkg` from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases).
 2. Install it from the folder you downloaded it into:
@@ -48,14 +63,7 @@ WinPilot.Mcp gives AI agents a Playwright-style workflow for Windows desktop app
 dotnet tool install -g WinPilot.Mcp --add-source <folder-with-the-nupkg>
 ```
 
-The server is then available as `winpilot-mcp`, and the opencode snippet below works as-is.
-
-> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org
-> (maintainers: add a `NUGET_API_KEY` repository secret — the release workflow publishes
-> automatically), `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
-> `dotnet dnx WinPilot.Mcp` runs the server without installing anything at all.
-
-### Option 2 — self-contained zip (no .NET required)
+### Option 3 — self-contained zip (no .NET required)
 
 Download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`) from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases), extract it, and point your client at `winpilot-mcp.exe`.
 
