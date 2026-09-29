@@ -49,9 +49,9 @@ Downloads the latest [release](https://github.com/nestebe/WinPilot.Mcp/releases)
 Re-run the same command to update. The server is then available as `winpilot-mcp`, and the opencode
 snippet below works as-is.
 
-> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org
-> (maintainers: add a `NUGET_API_KEY` repository secret — the release workflow publishes
-> automatically), `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
+> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org the release
+> workflow publishes it automatically through [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+> (no stored secrets) — then `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
 > `dotnet dnx WinPilot.Mcp` runs the server without installing anything at all.
 
 ### Option 2 — manual .NET tool install

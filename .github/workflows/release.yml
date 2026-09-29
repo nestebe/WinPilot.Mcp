@@ -6,15 +6,13 @@ on:
 
 permissions:
   contents: write
+  id-token: write # NuGet trusted publishing (OIDC -> short-lived API key)
 
 jobs:
   release:
     name: Build, test, pack and publish
     runs-on: windows-latest
     timeout-minutes: 90
-    env:
-      # Mapped here because the 'secrets' context is not available in step-level 'if' expressions.
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,9 +45,14 @@ jobs:
       - name: Pack tool package
         run: dotnet pack src/WinPilot.Mcp -c Release -o artifacts
 
+      - name: NuGet login (OIDC -> temporary API key)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: nestebe # nuget.org profile name (not the email)
+
       - name: Publish to NuGet.org
-        if: ${{ env.NUGET_API_KEY != '' }}
-        run: dotnet nuget push artifacts/*.nupkg --api-key "$env:NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish win-x64
         run: dotnet publish src/WinPilot.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
