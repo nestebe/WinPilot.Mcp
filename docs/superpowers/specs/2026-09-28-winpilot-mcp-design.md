@@ -2,11 +2,11 @@
 
 - **Date:** 2026-09-28
 - **Status:** Approved for implementation (design reviewed by the project owner; autonomous execution granted)
-- **Provenance:** Re-architecture of [shanselman/FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP) (MIT). Feature parity is preserved for the `windows_*` tool surface.
+- **Scope:** New implementation of a Windows desktop automation MCP server; feature parity is preserved for the `windows_*` tool surface.
 
 ## 1. Problem Statement
 
-The original FlaUI-MCP server repeatedly disconnects from MCP clients (reported with opencode as the primary client). Root causes identified by reading the original source:
+The previous implementation repeatedly disconnects from MCP clients (reported with opencode as the primary client). Root causes identified by reading its source:
 
 1. **Blocked protocol loop.** The hand-rolled JSON-RPC loop awaits each tool call serially. While a tool runs (up to 30 s+ of UI Automation work), it cannot answer client `ping` requests or cancellation notifications. Clients treat a silent server as dead and drop the connection.
 2. **Fake timeouts with orphaned work.** `Task.WhenAny(toolTask, timeoutTask)` returns a timeout error to the client while the UIA work keeps running on a background thread. Orphaned UIA calls run concurrently with subsequent calls against the same `UIA3Automation` instance, which is not safe: blocked threads accumulate, COM state can be corrupted, and the process can hang or crash. A crash closes stdio and the client shows "Connection closed".
@@ -240,7 +240,7 @@ Actions run sequentially through the same engine API as the individual tools (no
 
 ## 7. Licensing and Attribution
 
-MIT. `LICENSE` keeps the original copyright notice; `README`/`NOTICE` credit FlaUI-MCP (Scott Hanselman, MIT) and FlaUI (MIT). Adapted test apps from the original repository retain attribution.
+MIT. `LICENSE` carries the project license; third-party dependencies (FlaUI) are MIT and noted in `NOTICE`.
 
 ## 8. Risks and Mitigations
 

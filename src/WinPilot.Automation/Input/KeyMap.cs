@@ -3,8 +3,8 @@ using FlaUI.Core.WindowsAPI;
 namespace WinPilot.Automation.Input;
 
 /// <summary>
-/// Token-to-key mapping for <see cref="SendKeysParser"/>. Mirrors the token set of the original
-/// FlaUI-MCP server so existing agent prompts keep working.
+/// Token-to-key mapping for <see cref="SendKeysParser"/>. The token set is a stable
+/// agent-facing contract so existing prompts keep working.
 /// </summary>
 internal static class KeyMap
 {

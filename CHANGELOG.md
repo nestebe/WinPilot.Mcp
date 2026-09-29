@@ -8,13 +8,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [0.1.0] - 2026-09-28
 
-Initial release: a ground-up re-architecture of FlaUI-MCP.
+Initial release: an MCP server for Windows desktop automation with accessibility snapshots and element refs.
 
 ### Added
 
 - `windows_launch`, `windows_snapshot`, `windows_click`, `windows_type`, `windows_fill`,
   `windows_send_keys`, `windows_get_text`, `windows_screenshot`, `windows_list_windows`,
-  `windows_focus`, `windows_close`, `windows_batch` (parity with FlaUI-MCP).
+  `windows_focus`, `windows_close`, `windows_batch` — the full window and element tool set.
 - `windows_wait_for`: waits until an element exists, is enabled, and is on-screen.
 - `force: true` on `windows_close` for apps launched by the server.
 - `sendKeys` and `getText` batch actions.

@@ -233,7 +233,7 @@ public class StdioProtocolTests
         var tools = JsonNode.Parse(response.RootElement.GetProperty("result").GetRawText())!["tools"]!.AsArray();
         var byName = tools.ToDictionary(tool => tool!["name"]!.GetValue<string>(), StringComparer.Ordinal);
 
-        // The original FlaUI-MCP contract: element tools take a "ref" parameter.
+        // Contract: element tools take a "ref" parameter.
         foreach (var name in new[]
                  {
                      "windows_click", "windows_type", "windows_fill", "windows_send_keys",

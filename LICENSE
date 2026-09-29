@@ -2,13 +2,6 @@ MIT License
 
 Copyright (c) 2026 WinPilot.Mcp contributors
 
-Portions of this software are derived from FlaUI-MCP
-(https://github.com/shanselman/FlaUI-MCP), Copyright (c) Scott Hanselman,
-licensed under the MIT License.
-
-This software uses FlaUI (https://github.com/FlaUI/FlaUI),
-Copyright (c) FlaUI contributors, licensed under the MIT License.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

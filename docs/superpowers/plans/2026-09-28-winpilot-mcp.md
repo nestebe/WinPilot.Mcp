@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild FlaUI-MCP as WinPilot.Mcp — a well-architected, maintainable .NET 10 MCP server for Windows desktop automation that never disconnects.
+**Goal:** Build WinPilot.Mcp — a well-architected, maintainable .NET 10 MCP server for Windows desktop automation that never disconnects.
 
 **Architecture:** Two projects. `WinPilot.Automation` (class library): all UI Automation work serialized on one dedicated MTA worker thread (`UiaDispatcher`) with soft/hard timeouts and worker recycling; Win32 fast paths for window-level operations under lock-protected state; pure formatter/parser units for testability. `WinPilot.Mcp` (console exe): official MCP C# SDK stdio host with thin DI-injected tools; stdout carries only JSON-RPC; logs to stderr.
 
@@ -19,11 +19,11 @@
 - Central Package Management via `Directory.Packages.props`; no version attributes on `PackageReference`.
 - **stdout is protocol-only.** No `Console.Write*`/`Console.Out` anywhere in `src/`. Logging via `ILogger` (stderr console sink).
 - Comments and identifiers in English. Public API XML docs on `WinPilot.Automation` public types.
-- Ref format is `w{n}` / `w{n}e{k}` (agent-facing contract, unchanged from FlaUI-MCP).
+- Ref format is `w{n}` / `w{n}e{k}` (agent-facing contract, kept stable).
 - Snapshot text format unchanged: `- role "name" [ref=w1e5] [state]`, 2-space indent, role names and state names identical to the original.
 - Defaults: operation timeout 30 s, hard timeout 90 s, snapshot depth 10 / nodes 2000 / budget 10 000 ms, launch window timeout 10 000 ms.
 - All engine public async methods take `CancellationToken`; cancellation propagates as `OperationCanceledException`, never as error text.
-- MIT license with attribution to FlaUI-MCP (Scott Hanselman) and FlaUI.
+- MIT license; the FlaUI (MIT) dependency is noted in `NOTICE`.
 
 ## Review Focus
 
@@ -904,7 +904,7 @@ options: OperationTimeoutSeconds=1, HardTimeoutSeconds=2
   - `dotnet tool install -g WinPilot.Mcp` against the local package then `winpilot-mcp` smoke run.
 - [ ] **Step 2: Write README** (English): what it is, why (snapshot/ref model), quick demo (launch → snapshot → batch click), install section with three paths (dotnet tool / dnx / zip), **opencode config first** (`"mcp": { "winpilot": { "type": "local", "command": ["winpilot-mcp"] } }`), VS Code/Copilot and Claude configs, tool table (13 tools incl. `windows_wait_for`), configuration env-var table, troubleshooting (opencode connect timeout 30 s, `"timeout"` override; logs via `WINPILOT_LOG_FILE`), safety limitations (focus-dependent keyboard input, background capture caveats), supported apps matrix, license/credits.
 - [ ] **Step 3: `docs/architecture.md`**: the dispatcher/timeouts/recycle model, Win32 vs UIA split, error taxonomy, testing strategy, spec link.
-- [ ] **Step 4: `LICENSE` + credits**: MIT text with "Portions copyright (c) Scott Hanselman / FlaUI-MCP" and FlaUI attribution; `CHANGELOG.md` with `0.1.0` entry; short `CONTRIBUTING.md` (build/test commands).
+- [ ] **Step 4: `LICENSE` + `NOTICE`**: MIT text; `NOTICE` for the FlaUI dependency; `CHANGELOG.md` with `0.1.0` entry; short `CONTRIBUTING.md` (build/test commands).
 - [ ] **Step 5: Final verification** — `dotnet build -c Release`, all tests, `dotnet format --verify-no-changes`; fix and commit — `git commit -m "docs: readme, architecture, license and changelog"`.
 
 ---

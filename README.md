@@ -1,10 +1,12 @@
 # WinPilot.Mcp
 
+[![CI](https://github.com/nestebe/WinPilot.Mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/nestebe/WinPilot.Mcp/actions/workflows/ci.yml)
+
 An MCP (Model Context Protocol) server that lets AI agents automate Windows desktop applications through accessibility APIs — the same way Playwright automates browsers.
 
 `windows_snapshot` returns a structured accessibility tree with element refs (`w1e5`); agents act on refs with `windows_click`, `windows_type`, `windows_fill`, and friends. No screenshot guessing, no coordinates.
 
-This is a ground-up re-architecture of [FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP) (MIT, by Scott Hanselman) with one hard requirement: **never disconnect**. All UI Automation work is serialized on a dedicated worker thread, the MCP protocol layer always stays responsive, and timeouts are real.
+WinPilot.Mcp gives AI agents a Playwright-style workflow for Windows desktop apps: `windows_snapshot` returns a structured accessibility tree with element refs (`w1e5`), and agents act on those refs — no screenshot guessing, no coordinates. One hard requirement: **never disconnect**. All UI Automation work is serialized on a dedicated worker thread, the MCP protocol layer always stays responsive, and timeouts are real.
 
 ## Quick demo
 
@@ -37,25 +39,25 @@ This is a ground-up re-architecture of [FlaUI-MCP](https://github.com/shanselman
 
 ## Install
 
-### Option 1 — .NET tool (recommended)
+### Option 1 — .NET tool from the GitHub release (recommended)
+
+1. Download `WinPilot.Mcp.<version>.nupkg` from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases).
+2. Install it from the folder you downloaded it into:
 
 ```powershell
-dotnet tool install -g WinPilot.Mcp
+dotnet tool install -g WinPilot.Mcp --add-source <folder-with-the-nupkg>
 ```
 
-The server is then available as `winpilot-mcp`.
+The server is then available as `winpilot-mcp`, and the opencode snippet below works as-is.
 
-### Option 2 — zero install with `dnx` (.NET 10 SDK)
+> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org
+> (maintainers: add a `NUGET_API_KEY` repository secret — the release workflow publishes
+> automatically), `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
+> `dotnet dnx WinPilot.Mcp` runs the server without installing anything at all.
 
-No installation step at all; `dnx` fetches and runs the tool on first use:
+### Option 2 — self-contained zip (no .NET required)
 
-```powershell
-dotnet dnx WinPilot.Mcp
-```
-
-### Option 3 — self-contained zip
-
-Download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`) from [Releases](https://github.com/winpilot/WinPilot.Mcp/releases), extract it, and point your client at `winpilot-mcp.exe`.
+Download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`) from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases), extract it, and point your client at `winpilot-mcp.exe`.
 
 ## Configure your MCP client
 
@@ -75,7 +77,7 @@ Download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`) from [Releases](h
 }
 ```
 
-Zero-install variant: `"command": ["dotnet", "dnx", "WinPilot.Mcp"]`.
+Zero-install variant (after NuGet.org publication): `"command": ["dotnet", "dnx", "WinPilot.Mcp"]`.
 
 > opencode applies a 30 s timeout to server startup and tool listing. The first `dnx` run downloads the package — if your machine is slow, raise the timeout: `"timeout": 60000`.
 
@@ -178,4 +180,4 @@ See [docs/architecture.md](docs/architecture.md) for the engine design.
 
 ## License
 
-MIT. This project is a re-architecture of [FlaUI-MCP](https://github.com/shanselman/FlaUI-MCP) (Copyright © Scott Hanselman, MIT) and builds on [FlaUI](https://github.com/FlaUI/FlaUI) (MIT). See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). WinPilot.Mcp is built on the [FlaUI](https://github.com/FlaUI/FlaUI) library (MIT).
