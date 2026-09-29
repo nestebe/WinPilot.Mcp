@@ -220,6 +220,44 @@ public class StdioProtocolTests
         }
     }
 
+    [Fact]
+    public async Task Tools_expose_the_frozen_parameter_contract()
+    {
+        await using var client = RawMcpClient.Start();
+        await client.InitializeAsync();
+
+        await client.SendRequestAsync(50, "tools/list");
+        var response = await client.WaitForResponseAsync(50, TimeSpan.FromSeconds(5));
+        Assert.NotNull(response);
+
+        var tools = JsonNode.Parse(response.RootElement.GetProperty("result").GetRawText())!["tools"]!.AsArray();
+        var byName = tools.ToDictionary(tool => tool!["name"]!.GetValue<string>(), StringComparer.Ordinal);
+
+        // The original FlaUI-MCP contract: element tools take a "ref" parameter.
+        foreach (var name in new[]
+                 {
+                     "windows_click", "windows_type", "windows_fill", "windows_send_keys",
+                     "windows_get_text", "windows_screenshot", "windows_wait_for",
+                 })
+        {
+            var properties = byName[name]!["inputSchema"]!["properties"]!.AsObject();
+            Assert.True(properties.ContainsKey("ref"), $"{name} must expose a 'ref' property");
+            Assert.False(properties.ContainsKey("elementRef"), $"{name} must not expose 'elementRef'");
+        }
+
+        // windows_type must be callable without a ref (types into the focused element).
+        var typeRequired = RequiredOf(byName["windows_type"]!);
+        Assert.Equal(["text"], typeRequired);
+
+        // windows_click requires a ref.
+        Assert.Contains("ref", RequiredOf(byName["windows_click"]!));
+    }
+
+    private static string[] RequiredOf(JsonNode tool)
+        => tool["inputSchema"]!["required"] is { } required
+            ? [.. required.AsArray().Select(item => item!.GetValue<string>())]
+            : [];
+
     private static bool IsError(JsonDocument response)
         => response.RootElement.GetProperty("result").TryGetProperty("isError", out var isError)
            && isError.ValueKind == JsonValueKind.True;

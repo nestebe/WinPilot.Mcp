@@ -88,7 +88,7 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "ref": {
             "description": "Element ref from windows_snapshot (e.g. \u0027w1e5\u0027).",
             "type": "string"
           },
@@ -110,7 +110,7 @@
           }
         },
         "required": [
-          "elementRef"
+          "ref"
         ]
       }
     },
@@ -139,7 +139,7 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "ref": {
             "description": "Element ref from windows_snapshot (e.g. \u0027w1e5\u0027).",
             "type": "string"
           },
@@ -149,7 +149,7 @@
           }
         },
         "required": [
-          "elementRef",
+          "ref",
           "value"
         ]
       }
@@ -183,13 +183,13 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "ref": {
             "description": "Element ref from windows_snapshot (e.g. \u0027w1e5\u0027).",
             "type": "string"
           }
         },
         "required": [
-          "elementRef"
+          "ref"
         ]
       }
     },
@@ -250,7 +250,7 @@
             ],
             "default": null
           },
-          "elementRef": {
+          "ref": {
             "description": "Element ref to capture. If omitted, captures the whole window.",
             "type": [
               "string",
@@ -298,7 +298,7 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "ref": {
             "description": "Element ref from windows_snapshot. If omitted, sends to the focused element.",
             "type": [
               "string",
@@ -360,16 +360,17 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "text": {
+            "description": "Text to type.",
+            "type": "string"
+          },
+          "ref": {
             "description": "Element ref from windows_snapshot. If omitted, types into the currently focused element.",
             "type": [
               "string",
               "null"
-            ]
-          },
-          "text": {
-            "description": "Text to type.",
-            "type": "string"
+            ],
+            "default": null
           },
           "submit": {
             "description": "Press Enter after typing (default false).",
@@ -378,7 +379,6 @@
           }
         },
         "required": [
-          "elementRef",
           "text"
         ]
       }
@@ -388,7 +388,7 @@
       "inputSchema": {
         "type": "object",
         "properties": {
-          "elementRef": {
+          "ref": {
             "description": "Element ref from windows_snapshot to wait for (alternative to a selector).",
             "type": [
               "string",

@@ -25,7 +25,7 @@ public class LaunchServiceTests
             },
             delay: (_, _) => Task.CompletedTask);
 
-        var result = await launcher.LaunchAndWaitAsync("testapp.exe", ["--flag"], timeoutMs: 5_000, CancellationToken.None);
+        var result = await launcher.LaunchAndWaitAsync("testapp.exe", ["--flag"], timeoutMs: 5_000, cancellationToken: CancellationToken.None);
 
         Assert.Equal(new IntPtr(0x10), result.Window.Hwnd);
         Assert.Equal("Test App", result.Window.Title);
@@ -47,12 +47,24 @@ public class LaunchServiceTests
             windowEnumerator: () => [new RawWindow(new IntPtr(1), "App", current.Id)],
             delay: (_, _) => Task.CompletedTask);
 
-        await launcher.LaunchAndWaitAsync("app.exe", ["--a", "b"], timeoutMs: 5_000, CancellationToken.None);
+        await launcher.LaunchAndWaitAsync("app.exe", ["--flag", "with space"], timeoutMs: 5_000, cancellationToken: CancellationToken.None);
 
         Assert.NotNull(captured);
         Assert.Equal("app.exe", captured.FileName);
-        Assert.Equal("--a b", captured.Arguments);
+        Assert.Equal(["--flag", "with space"], captured.ArgumentList);
         Assert.False(captured.UseShellExecute);
+    }
+
+    [Fact]
+    public async Task Non_positive_timeouts_are_rejected_as_invalid_arguments()
+    {
+        var launcher = new LaunchService(
+            processStarter: _ => CurrentProcess,
+            windowEnumerator: () => [],
+            delay: (_, _) => Task.CompletedTask);
+
+        await Assert.ThrowsAsync<InvalidArgumentException>(() =>
+            launcher.LaunchAndWaitAsync("app.exe", null, timeoutMs: 0, cancellationToken: CancellationToken.None));
     }
 
     [Fact]
@@ -64,7 +76,7 @@ public class LaunchServiceTests
             delay: (_, _) => Task.CompletedTask);
 
         var exception = await Assert.ThrowsAsync<LaunchFailedException>(() =>
-            launcher.LaunchAndWaitAsync("ghost.exe", null, timeoutMs: 1, CancellationToken.None));
+            launcher.LaunchAndWaitAsync("ghost.exe", null, timeoutMs: 1, cancellationToken: CancellationToken.None));
 
         Assert.Contains("ghost.exe", exception.Message, StringComparison.Ordinal);
         Assert.NotNull(exception.Hint);
@@ -91,7 +103,7 @@ public class LaunchServiceTests
             delay: (_, _) => Task.CompletedTask);
 
         var result = await launcher.LaunchAndWaitAsync(
-            "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App", null, timeoutMs: 5_000, CancellationToken.None);
+            "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App", null, timeoutMs: 5_000, cancellationToken: CancellationToken.None);
 
         Assert.NotNull(captured);
         Assert.Equal("explorer.exe", captured.FileName);
@@ -109,7 +121,7 @@ public class LaunchServiceTests
             delay: (_, _) => Task.CompletedTask);
 
         await Assert.ThrowsAsync<LaunchFailedException>(() =>
-            launcher.LaunchAndWaitAsync("app.exe", null, timeoutMs: 5_000, CancellationToken.None));
+            launcher.LaunchAndWaitAsync("app.exe", null, timeoutMs: 5_000, cancellationToken: CancellationToken.None));
     }
 
     [Fact]
@@ -127,6 +139,6 @@ public class LaunchServiceTests
             });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            launcher.LaunchAndWaitAsync("app.exe", null, timeoutMs: 60_000, cts.Token));
+            launcher.LaunchAndWaitAsync("app.exe", null, timeoutMs: 60_000, cancellationToken: cts.Token));
     }
 }

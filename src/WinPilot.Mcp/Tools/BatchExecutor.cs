@@ -57,6 +57,13 @@ internal sealed class BatchExecutor(IWindowsAutomation automation)
 
     private static async Task<string> WaitAsync(int milliseconds, CancellationToken cancellationToken)
     {
+        if (milliseconds < 0)
+        {
+            throw new InvalidArgumentException(
+                "The wait action needs a non-negative 'ms' value.",
+                "Example: { \"action\": \"wait\", \"ms\": 250 }.");
+        }
+
         await Task.Delay(milliseconds, cancellationToken);
         return $"Waited {milliseconds}ms";
     }

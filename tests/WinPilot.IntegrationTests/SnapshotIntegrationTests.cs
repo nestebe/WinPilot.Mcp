@@ -44,6 +44,17 @@ public class SnapshotIntegrationTests
     }
 
     [Fact]
+    public async Task Refs_for_never_snapshotted_windows_report_element_not_found()
+    {
+        await using var fixture = await AutomationFixture.StartAsync();
+
+        var exception = await Assert.ThrowsAsync<ElementNotFoundException>(() =>
+            fixture.Engine.GetTextAsync("w99e99", CancellationToken.None));
+
+        Assert.NotNull(exception.Hint);
+    }
+
+    [Fact]
     public async Task Unknown_refs_report_element_not_found()
     {
         TestEnvironment.RequireInteractiveDesktop();

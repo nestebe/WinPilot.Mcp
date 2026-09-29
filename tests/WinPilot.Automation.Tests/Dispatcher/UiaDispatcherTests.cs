@@ -239,6 +239,46 @@ public class UiaDispatcherTests
     }
 
     [Fact]
+    public async Task Abandoned_queued_items_do_not_execute()
+    {
+        var factory = new ContextFactory();
+        await using var dispatcher = CreateDispatcher(factory, o =>
+        {
+            o.OperationTimeoutSeconds = 1;
+            o.HardTimeoutSeconds = 60;
+        });
+        using var gate = new ManualResetEventSlim(false);
+        var secondRan = false;
+
+        var first = dispatcher.InvokeAsync(
+            "blocker",
+            (_, token) =>
+            {
+                gate.Wait(TimeSpan.FromSeconds(30), token);
+                return 1;
+            },
+            CancellationToken.None);
+
+        var second = dispatcher.InvokeAsync(
+            "queued",
+            (_, _) =>
+            {
+                secondRan = true;
+                return 2;
+            },
+            CancellationToken.None);
+
+        // Both callers time out; the second item is still queued behind the blocker.
+        await Assert.ThrowsAsync<OperationTimeoutException>(() => first);
+        await Assert.ThrowsAsync<OperationTimeoutException>(() => second);
+
+        gate.Set();
+        await Task.Delay(300, TestContext.Current.CancellationToken);
+
+        Assert.False(secondRan, "an abandoned queued item must not execute");
+    }
+
+    [Fact]
     public async Task Dispose_stops_worker_and_disposes_context()
     {
         var factory = new ContextFactory();

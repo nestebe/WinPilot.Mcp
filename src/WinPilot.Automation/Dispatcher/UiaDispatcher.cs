@@ -232,6 +232,15 @@ internal sealed class UiaDispatcher<TContext> : IAsyncDisposable
                     continue;
                 }
 
+                if (item.Abandoned)
+                {
+                    // The caller already gave up on this queued item; executing it now would
+                    // apply side effects nobody is waiting for (for example a late click).
+                    _logger.LogDebug("Skipped abandoned queued operation '{OperationName}'.", item.OperationName);
+                    item.Completion.TrySetCanceled(item.CancellationToken);
+                    continue;
+                }
+
                 ExecuteWorkItem(context, workerEpoch, item);
             }
         }

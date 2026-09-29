@@ -39,8 +39,8 @@ These keep working while the UIA worker is wedged — verified by the wedge inte
 
 ## Elements, refs, and snapshots
 
-- Refs are `w{n}` (windows) and `w{n}e{k}` (elements); the format is a stable agent-facing contract.
-- `ElementRegistry<TElement>` keeps the current snapshot per window plus one previous version, so a stale ref can be told apart from an unknown one and re-resolved by fingerprint (`AutomationId` → `RuntimeId` → `Name` + `ControlType`) — one retry, then `ELEMENT_STALE`.
+- Refs are `w{n}` (windows) and `w{n}e{k}` (elements); the format is a stable agent-facing contract. Ref strings are reused by each snapshot (parity with the original server): indices overwritten by the new tree point at the new elements, while refs the new tree no longer emits become stale.
+- `ElementRegistry<TElement>` keeps the current snapshot per window plus one previous version, so a stale ref can be told apart from an unknown one and re-resolved by fingerprint (automation id first, then name + control type) — one retry, then `ELEMENT_STALE`.
 - Snapshots are built by a pure formatter (`SnapshotFormatter`) over a `SnapshotNode` tree produced by `SnapshotWalker` over `IUiNode` — production adapts FlaUI (`FlaUiNode`), tests use fake trees. Depth, node, and time budgets produce explicit truncation markers.
 
 ## Error taxonomy

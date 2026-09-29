@@ -57,16 +57,8 @@ internal sealed class SessionManager : IDisposable
         CancellationToken cancellationToken)
     {
         var result = await _launcher
-            .LaunchAndWaitAsync(app, args, timeoutMs ?? _options.LaunchWindowTimeoutMs, cancellationToken)
+            .LaunchAndWaitAsync(app, args, timeoutMs ?? _options.LaunchWindowTimeoutMs, TrackProcess, cancellationToken)
             .ConfigureAwait(false);
-
-        if (result.Process is not null)
-        {
-            lock (_gate)
-            {
-                _ownedProcesses[result.Process.Id] = result.Process;
-            }
-        }
 
         return Windows.RegisterOrGet(
             result.Window.Hwnd,
@@ -93,13 +85,12 @@ internal sealed class SessionManager : IDisposable
     }
 
     /// <summary>Focuses a window by handle or by case-insensitive title substring.</summary>
-    public WindowInfo Focus(string? handle, string? title)
+    public FocusResult Focus(string? handle, string? title)
     {
         if (!string.IsNullOrEmpty(handle))
         {
             var info = ResolveHandle(handle);
-            _ = _tryFocus(info.Hwnd);
-            return info;
+            return new FocusResult(info, _tryFocus(info.Hwnd));
         }
 
         if (!string.IsNullOrEmpty(title))
@@ -114,8 +105,7 @@ internal sealed class SessionManager : IDisposable
                     "Run windows_list_windows to see available windows.");
             }
 
-            _ = _tryFocus(match.Hwnd);
-            return match;
+            return new FocusResult(match, _tryFocus(match.Hwnd));
         }
 
         throw new InvalidArgumentException(
@@ -217,4 +207,15 @@ internal sealed class SessionManager : IDisposable
             return _ownedProcesses.TryGetValue(processId, out process!);
         }
     }
+
+    private void TrackProcess(Process process)
+    {
+        lock (_gate)
+        {
+            _ownedProcesses[process.Id] = process;
+        }
+    }
 }
+
+/// <summary>Outcome of a focus request: the window and whether the native focus call succeeded.</summary>
+internal sealed record FocusResult(WindowInfo Window, bool NativeFocusSucceeded);

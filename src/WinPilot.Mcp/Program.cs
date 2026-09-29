@@ -20,7 +20,15 @@ builder.Configuration.AddInMemoryCollection(OptionsBinding.TranslateEnvironment(
 var winPilotOptions = new WinPilotOptions();
 builder.Configuration.GetSection(WinPilotOptions.SectionName).Bind(winPilotOptions);
 builder.Configuration.Bind(winPilotOptions); // top-level keys from WINPILOT_* variables win over appsettings
-winPilotOptions.Validate();
+try
+{
+    winPilotOptions.Validate();
+}
+catch (ArgumentOutOfRangeException exception)
+{
+    Console.Error.WriteLine($"WinPilot: invalid configuration: {exception.Message}");
+    return 1;
+}
 
 builder.Services.AddSingleton(Options.Create(winPilotOptions));
 builder.Services.AddSingleton<IWindowsAutomation>(services => new WindowsAutomationEngine(
@@ -29,6 +37,7 @@ builder.Services.AddSingleton<IWindowsAutomation>(services => new WindowsAutomat
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole(console => console.LogToStandardErrorThreshold = LogLevel.Trace);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
 if (builder.Configuration["LogLevel"] is { Length: > 0 } levelText
     && Enum.TryParse<LogLevel>(levelText, ignoreCase: true, out var minimumLevel))
 {
@@ -68,3 +77,4 @@ builder.Services
 DpiInitialization.EnablePerMonitorV2();
 
 await builder.Build().RunAsync();
+return 0;

@@ -16,7 +16,7 @@ public sealed class WaitForTool(IWindowsAutomation automation)
     [Description("Wait until an element exists, is enabled, and is on-screen, then return its snapshot line with a fresh ref. " +
                  "Provide either a ref or a selector (name/automationId/controlType).")]
     public async Task<CallToolResult> WaitAsync(
-        [Description("Element ref from windows_snapshot to wait for (alternative to a selector).")] string? elementRef = null,
+        [Description("Element ref from windows_snapshot to wait for (alternative to a selector).")] string? @ref = null,
         [Description("Window handle to search in. If omitted, uses the ref's window or the foreground window.")] string? handle = null,
         [Description("Accessible name to wait for (exact match).")] string? name = null,
         [Description("Automation id to wait for (exact match).")] string? automationId = null,
@@ -29,7 +29,7 @@ public sealed class WaitForTool(IWindowsAutomation automation)
             var hasSelector = !string.IsNullOrEmpty(name) || !string.IsNullOrEmpty(automationId) || !string.IsNullOrEmpty(controlType);
             var selector = hasSelector ? new ElementSelector(name, automationId, controlType) : null;
 
-            var info = await automation.WaitForElementAsync(handle, elementRef, selector, timeoutMs, cancellationToken);
+            var info = await automation.WaitForElementAsync(handle, @ref, selector, timeoutMs, cancellationToken);
             return ToolErrors.Text($"{info.Line}\nRef: {info.Ref}");
         }
         catch (WinPilotException exception)

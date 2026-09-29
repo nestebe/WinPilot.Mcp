@@ -82,7 +82,7 @@ public class ElementToolsTests
         var fake = new FakeWindowsAutomation();
         var tools = new ElementTools(fake);
 
-        var result = await tools.TypeAsync("w1e5", "hello", submit: true, CancellationToken.None);
+        var result = await tools.TypeAsync("hello", "w1e5", submit: true, CancellationToken.None);
 
         Assert.Equal("Typed \"hello\"", TextOf(result));
         Assert.Contains("type:w1e5|hello|True", fake.Calls);
@@ -94,9 +94,27 @@ public class ElementToolsTests
         var fake = new FakeWindowsAutomation();
         var tools = new ElementTools(fake);
 
-        _ = await tools.TypeAsync(null, "hi", submit: false, CancellationToken.None);
+        _ = await tools.TypeAsync("hi", null, false, CancellationToken.None);
 
         Assert.Contains("type:|hi|False", fake.Calls);
+    }
+
+    [Fact]
+    public async Task Cancellation_propagates_as_OperationCanceledException()
+    {
+        var fake = new FakeWindowsAutomation
+        {
+            OnClick = async (_, _, _, token) =>
+            {
+                await Task.Delay(Timeout.Infinite, token);
+                return "unreachable";
+            },
+        };
+        var tools = new ElementTools(fake);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            tools.ClickAsync("w1e5", null, null, cts.Token));
     }
 
     [Fact]

@@ -66,10 +66,22 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
     }
 
     /// <inheritdoc />
-    public Task<WindowInfo> FocusWindowAsync(string? handle, string? title, CancellationToken cancellationToken)
+    public async Task<WindowInfo> FocusWindowAsync(string? handle, string? title, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(_session.Focus(handle, title));
+
+        var result = _session.Focus(handle, title);
+        if (result.NativeFocusSucceeded)
+        {
+            return result.Window;
+        }
+
+        // SetForegroundWindow can be refused (foreground lock); fall back to UI Automation focus.
+        return await _dispatcher.InvokeAsync("windows_focus", (context, _) =>
+        {
+            GetWindowOnWorker(context, result.Window).Focus();
+            return result.Window;
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -80,6 +92,7 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
     public Task<string> SnapshotAsync(string? handle, int? maxDepth, CancellationToken cancellationToken)
         => _dispatcher.InvokeAsync("windows_snapshot", (context, token) =>
         {
+            var epoch = _dispatcher.CurrentEpoch;
             var windowInfo = ResolveWindowInfo(handle);
             var window = GetWindowOnWorker(context, windowInfo);
             var depth = ClampDepth(maxDepth, _options.SnapshotMaxDepth);
@@ -98,7 +111,7 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
                     : RegisterNode(context, windowInfo.Handle, candidate),
                 token);
 
-            _snapshotEpochs[windowInfo.Handle] = _dispatcher.CurrentEpoch;
+            _snapshotEpochs[windowInfo.Handle] = epoch;
             return SnapshotFormatter.Format(node, depth);
         }, cancellationToken);
 
@@ -121,10 +134,16 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
         }
 
         var timeout = timeoutMs ?? _options.WaitForElementTimeoutMs;
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeout, 1);
+        if (timeout < 1)
+        {
+            throw new InvalidArgumentException(
+                "timeoutMs must be greater than zero.",
+                "Pass a positive timeout in milliseconds or omit it to use the configured default.");
+        }
 
         return _dispatcher.InvokeAsync("windows_wait_for", (context, token) =>
         {
+            var epoch = _dispatcher.CurrentEpoch;
             var windowInfo = ResolveWaitWindow(parentHandle, elementRef);
             var window = GetWindowOnWorker(context, windowInfo);
 
@@ -133,22 +152,9 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
             {
                 token.ThrowIfCancellationRequested();
 
-                AutomationElement? element = null;
-                if (hasRef)
-                {
-                    try
-                    {
-                        element = ResolveElement(context, elementRef!, token);
-                    }
-                    catch (WinPilotException)
-                    {
-                        element = null; // not resolvable yet: keep waiting
-                    }
-                }
-                else
-                {
-                    element = ElementOperations.FindBySelector(window, selector!);
-                }
+                var element = hasRef
+                    ? ResolveElement(context, elementRef!, token)
+                    : ElementOperations.FindBySelector(window, selector!);
 
                 if (element is not null && ElementOperations.IsUsable(element))
                 {
@@ -156,7 +162,7 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
                         windowInfo.Handle,
                         element,
                         ElementFingerprint.From(element));
-                    _snapshotEpochs[windowInfo.Handle] = _dispatcher.CurrentEpoch;
+                    _snapshotEpochs[windowInfo.Handle] = epoch;
                     return ElementOperations.Describe(refId, element);
                 }
 
@@ -413,7 +419,7 @@ public sealed class WindowsAutomationEngine : IWindowsAutomation
 
     private void EnsureSnapshotEpoch(string windowHandle)
     {
-        if (_snapshotEpochs.GetValueOrDefault(windowHandle, -1) != _dispatcher.CurrentEpoch)
+        if (_snapshotEpochs.TryGetValue(windowHandle, out var epoch) && epoch != _dispatcher.CurrentEpoch)
         {
             throw new ElementStaleException(
                 $"Element refs for window {windowHandle} are from a previous engine session.",

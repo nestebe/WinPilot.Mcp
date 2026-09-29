@@ -29,36 +29,54 @@ internal sealed class LaunchService
     }
 
     /// <summary>Starts the application and waits for its first top-level window.</summary>
+    /// <param name="app">Executable path or UWP app id.</param>
+    /// <param name="args">Optional command line arguments (added without shell quoting).</param>
+    /// <param name="timeoutMs">Window discovery timeout in milliseconds.</param>
+    /// <param name="onProcessStarted">Invoked with the started process, before window discovery.</param>
+    /// <param name="cancellationToken">Cooperative cancellation.</param>
     public async Task<LaunchResult> LaunchAndWaitAsync(
         string app,
         IReadOnlyList<string>? args,
         int timeoutMs,
-        CancellationToken cancellationToken)
+        Action<Process>? onProcessStarted = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(app);
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeoutMs, 1);
+        if (timeoutMs < 1)
+        {
+            throw new InvalidArgumentException(
+                "timeoutMs must be greater than zero.",
+                "Pass a positive timeout in milliseconds or omit it to use the configured default.");
+        }
 
         return app.Contains('!')
             ? await LaunchUwpAsync(app, timeoutMs, cancellationToken).ConfigureAwait(false)
-            : await LaunchProcessAsync(app, args, timeoutMs, cancellationToken).ConfigureAwait(false);
+            : await LaunchProcessAsync(app, args, timeoutMs, onProcessStarted, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<LaunchResult> LaunchProcessAsync(
         string app,
         IReadOnlyList<string>? args,
         int timeoutMs,
+        Action<Process>? onProcessStarted,
         CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo(app)
         {
             UseShellExecute = false,
-            Arguments = string.Join(' ', args ?? []),
         };
+
+        foreach (var argument in args ?? [])
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         var process = _processStarter(startInfo)
             ?? throw new LaunchFailedException(
                 $"Failed to start '{app}'.",
                 "Check that the executable path exists and that you have permission to run it.");
+
+        onProcessStarted?.Invoke(process);
 
         var window = await PollAsync(
             () => FindFirst(w => w.ProcessId == process.Id),

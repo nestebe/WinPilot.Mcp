@@ -37,14 +37,14 @@ public sealed class ElementTools(IWindowsAutomation automation)
     [McpServerTool(Name = "windows_click")]
     [Description("Click an element by its ref (from windows_snapshot). Prefers the Invoke pattern for reliability, falls back to a mouse click.")]
     public async Task<CallToolResult> ClickAsync(
-        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string elementRef,
+        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string @ref,
         [Description("Mouse button: left (default), right, middle. Right and middle always use a real mouse click.")] string? button = null,
         [Description("Double-click instead of a single click (default false).")] bool? doubleClick = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var message = await automation.ClickAsync(elementRef, button ?? "left", doubleClick ?? false, cancellationToken);
+            var message = await automation.ClickAsync(@ref, button ?? "left", doubleClick ?? false, cancellationToken);
             return ToolErrors.Text(message);
         }
         catch (WinPilotException exception)
@@ -62,14 +62,14 @@ public sealed class ElementTools(IWindowsAutomation automation)
     [Description("Type text into an element (focused first when a ref is given) or into the focused element. " +
                  "Use windows_fill to replace existing content.")]
     public async Task<CallToolResult> TypeAsync(
-        [Description("Element ref from windows_snapshot. If omitted, types into the currently focused element.")] string? elementRef,
         [Description("Text to type.")] string text,
+        [Description("Element ref from windows_snapshot. If omitted, types into the currently focused element.")] string? @ref = null,
         [Description("Press Enter after typing (default false).")] bool submit = false,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return ToolErrors.Text(await automation.TypeAsync(elementRef, text, submit, cancellationToken));
+            return ToolErrors.Text(await automation.TypeAsync(@ref, text, submit, cancellationToken));
         }
         catch (WinPilotException exception)
         {
@@ -85,13 +85,13 @@ public sealed class ElementTools(IWindowsAutomation automation)
     [McpServerTool(Name = "windows_fill")]
     [Description("Clear and fill a text field with a new value. Prefers the Value pattern for reliability.")]
     public async Task<CallToolResult> FillAsync(
-        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string elementRef,
+        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string @ref,
         [Description("Value to fill.")] string value,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return ToolErrors.Text(await automation.FillAsync(elementRef, value, cancellationToken));
+            return ToolErrors.Text(await automation.FillAsync(@ref, value, cancellationToken));
         }
         catch (WinPilotException exception)
         {
@@ -108,14 +108,14 @@ public sealed class ElementTools(IWindowsAutomation automation)
     [Description("Send one key chord or a sequence of chords to an element (focused first) or the focused element. " +
                  "Provide exactly one of chord ('Ctrl+Right') or keys (['Ctrl+C', 'Down']).")]
     public async Task<CallToolResult> SendKeysAsync(
-        [Description("Element ref from windows_snapshot. If omitted, sends to the focused element.")] string? elementRef = null,
+        [Description("Element ref from windows_snapshot. If omitted, sends to the focused element.")] string? @ref = null,
         [Description("Single key chord, e.g. 'Ctrl+Right' or 'Alt+F4'.")] string? chord = null,
         [Description("Sequence of key presses/chords, e.g. ['Ctrl+C', 'Ctrl+V', 'Enter'].")] IReadOnlyList<string>? keys = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return ToolErrors.Text(await automation.SendKeysAsync(elementRef, chord, keys, cancellationToken));
+            return ToolErrors.Text(await automation.SendKeysAsync(@ref, chord, keys, cancellationToken));
         }
         catch (WinPilotException exception)
         {
@@ -131,12 +131,12 @@ public sealed class ElementTools(IWindowsAutomation automation)
     [McpServerTool(Name = "windows_get_text", ReadOnly = true, Idempotent = true)]
     [Description("Get the text content of an element. Returns the element's Name property, or for text inputs, the current value.")]
     public async Task<CallToolResult> GetTextAsync(
-        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string elementRef,
+        [Description("Element ref from windows_snapshot (e.g. 'w1e5').")] string @ref,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return ToolErrors.Text(await automation.GetTextAsync(elementRef, cancellationToken));
+            return ToolErrors.Text(await automation.GetTextAsync(@ref, cancellationToken));
         }
         catch (WinPilotException exception)
         {

@@ -22,6 +22,8 @@ public class SessionManagerTests
 
         public List<IntPtr> Focused { get; } = [];
 
+        public bool TryFocusResult { get; set; } = true;
+
         public bool StubbornClose { get; set; }
 
         public LaunchService Launcher { get; }
@@ -55,7 +57,7 @@ public class SessionManagerTests
                 tryFocus: hwnd =>
                 {
                     Focused.Add(hwnd);
-                    return true;
+                    return TryFocusResult;
                 },
                 processKiller: Killed.Add,
                 closePollInterval: TimeSpan.FromMilliseconds(5));
@@ -92,10 +94,26 @@ public class SessionManagerTests
         harness.Windows.Add(new RawWindow(new IntPtr(2), "Untitled - Notepad", 11));
         harness.Alive.UnionWith([new IntPtr(1), new IntPtr(2)]);
 
-        var info = manager.Focus(handle: null, title: "notepad");
+        var result = manager.Focus(handle: null, title: "notepad");
 
-        Assert.Equal("w2", info.Handle);
+        Assert.Equal("w2", result.Window.Handle);
+        Assert.True(result.NativeFocusSucceeded);
         Assert.Equal([new IntPtr(2)], harness.Focused);
+    }
+
+    [Fact]
+    public void Focus_reports_when_native_focus_fails()
+    {
+        var harness = new Harness { TryFocusResult = false };
+        using var manager = harness.CreateManager();
+        harness.Windows.Add(new RawWindow(new IntPtr(1), "App", 10));
+        harness.Alive.Add(new IntPtr(1));
+        _ = manager.ListWindows();
+
+        var result = manager.Focus("w1", null);
+
+        Assert.Equal("w1", result.Window.Handle);
+        Assert.False(result.NativeFocusSucceeded);
     }
 
     [Fact]
@@ -183,6 +201,21 @@ public class SessionManagerTests
         keeping.Shutdown();
         keeping.Dispose();
         Assert.Empty(harness.Killed);
+    }
+
+    [Fact]
+    public async Task Launch_failure_still_tracks_the_started_process()
+    {
+        var harness = new Harness(); // no windows appear
+        using var manager = harness.CreateManager();
+
+        await Assert.ThrowsAsync<LaunchFailedException>(() =>
+            manager.LaunchAsync("testapp.exe", null, timeoutMs: 1, CancellationToken.None));
+
+        Assert.True(manager.IsOwned(CurrentProcess.Id), "the started process must be tracked even when discovery fails");
+
+        manager.Shutdown();
+        Assert.Contains(harness.Killed, process => process.Id == CurrentProcess.Id);
     }
 
     [Fact]

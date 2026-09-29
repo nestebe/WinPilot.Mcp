@@ -1,4 +1,5 @@
 using WinPilot.Automation.Capture;
+using WinPilot.Automation.Errors;
 using Xunit;
 
 namespace WinPilot.IntegrationTests;
@@ -43,6 +44,8 @@ public class InteractionIntegrationTests
     {
         TestEnvironment.RequireInteractiveDesktop();
         await using var fixture = await AutomationFixture.StartAsync();
+        // Keyboard input is focus-dependent: make the fixture window the foreground window first.
+        _ = await fixture.Engine.FocusWindowAsync(fixture.Window.Handle, null, CancellationToken.None);
         var snapshot = await fixture.Engine.SnapshotAsync(fixture.Window.Handle, null, CancellationToken.None);
         var nameRef = TestHelpers.FindRef(snapshot, "[txtName]");
 
@@ -66,6 +69,20 @@ public class InteractionIntegrationTests
         var message = await fixture.Engine.ClickAsync(helloRef, "left", false, CancellationToken.None);
 
         Assert.Contains("Invoked Hello", message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Wait_for_with_an_unknown_ref_fails_fast()
+    {
+        await using var fixture = await AutomationFixture.StartAsync();
+        _ = await fixture.Engine.SnapshotAsync(fixture.Window.Handle, null, CancellationToken.None);
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        await Assert.ThrowsAsync<ElementNotFoundException>(() =>
+            fixture.Engine.WaitForElementAsync(fixture.Window.Handle, $"{fixture.Window.Handle}e9999", null, timeoutMs: 5_000, CancellationToken.None));
+        stopwatch.Stop();
+
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(2), $"expected a fast failure, took {stopwatch.Elapsed}");
     }
 
     [Fact]
