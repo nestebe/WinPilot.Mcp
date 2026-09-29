@@ -8,6 +8,9 @@ internal static class TestEnvironment
 {
     public static bool HasInteractiveDesktop { get; } = Detect();
 
+    /// <summary>Gets the current foreground window handle.</summary>
+    public static IntPtr ForegroundWindow => GetForegroundWindow();
+
     /// <summary>Skips the current test when no interactive Windows desktop session is available.</summary>
     public static void RequireInteractiveDesktop()
         => Assert.SkipWhen(!HasInteractiveDesktop, "Requires an interactive Windows desktop session.");

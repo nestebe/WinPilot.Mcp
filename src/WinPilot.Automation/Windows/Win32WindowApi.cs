@@ -69,7 +69,36 @@ internal static class Win32WindowApi
     public static bool TryFocus(IntPtr hwnd)
     {
         _ = ShowWindow(hwnd, SwRestore);
-        return SetForegroundWindow(hwnd);
+        _ = BringWindowToTop(hwnd);
+
+        if (SetForegroundWindow(hwnd))
+        {
+            return true;
+        }
+
+        // Windows refuses foreground changes from background processes ("foreground lock").
+        // Attaching to the current foreground thread lifts the restriction for the call.
+        var foreground = GetForegroundWindowNative();
+        if (foreground == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        var foregroundThread = GetWindowThreadProcessId(foreground, out _);
+        var currentThread = GetCurrentThreadId();
+        if (foregroundThread == currentThread || !AttachThreadInput(currentThread, foregroundThread, true))
+        {
+            return false;
+        }
+
+        try
+        {
+            return SetForegroundWindow(hwnd);
+        }
+        finally
+        {
+            _ = AttachThreadInput(currentThread, foregroundThread, false);
+        }
     }
 
     /// <summary>Resolves a process name from a process id; null when unavailable.</summary>
@@ -149,6 +178,17 @@ internal static class Win32WindowApi
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool BringWindowToTop(IntPtr hwnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool attach);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);

@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-29
+
+### Fixed
+
+- `windows_focus` now reliably lifts the Windows foreground lock: `BringWindowToTop` plus an
+  `AttachThreadInput` fallback when `SetForegroundWindow` is refused, so keyboard-dependent
+  tools (`windows_type`, `windows_send_keys`) target the intended window.
+
+### Tests
+
+- The keyboard integration test verifies the app actually holds the foreground and skips when a
+  foreground-stealing service (for example the invisible `GameInputSvc` window seen on some
+  machines) makes global keyboard input impossible — an environment limitation, not a failure.
+- The wedge recovery test is hardened against loaded machines: retried setup/recovery snapshots
+  and a removed over-constrained click assertion (clicking is covered with production timeouts
+  in the interaction tests).
+
 ## [0.1.2] - 2026-09-29
 
 ### Fixed

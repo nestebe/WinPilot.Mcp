@@ -44,16 +44,37 @@ public class InteractionIntegrationTests
     {
         TestEnvironment.RequireInteractiveDesktop();
         await using var fixture = await AutomationFixture.StartAsync();
-        // Keyboard input is focus-dependent: make the fixture window the foreground window first.
-        _ = await fixture.Engine.FocusWindowAsync(fixture.Window.Handle, null, CancellationToken.None);
         var snapshot = await fixture.Engine.SnapshotAsync(fixture.Window.Handle, null, CancellationToken.None);
         var nameRef = TestHelpers.FindRef(snapshot, "[txtName]");
 
-        await fixture.Engine.FillAsync(nameRef, "replace-me", CancellationToken.None);
-        await fixture.Engine.SendKeysAsync(nameRef, "Ctrl+A", null, CancellationToken.None);
-        await fixture.Engine.TypeAsync(nameRef, "typed", submit: false, CancellationToken.None);
+        // Keyboard input is focus-dependent (documented product behavior). Verify that the app
+        // actually holds the foreground after focusing; a foreground-stealing service (for
+        // example the invisible GameInputSvc window seen on some machines) makes global keyboard
+        // input impossible — that is an environment limitation, not a product failure, so skip.
+        string text = string.Empty;
+        for (var attempt = 0; ; attempt++)
+        {
+            _ = await fixture.Engine.FocusWindowAsync(fixture.Window.Handle, null, CancellationToken.None);
+            if (TestEnvironment.ForegroundWindow != fixture.Window.Hwnd)
+            {
+                Assert.SkipWhen(attempt >= 3, "Another process holds the desktop foreground (foreground-stealing service); keyboard-dependent checks are skipped.");
+                await Task.Delay(300, TestContext.Current.CancellationToken);
+                continue;
+            }
 
-        Assert.Equal("typed", await fixture.Engine.GetTextAsync(nameRef, CancellationToken.None));
+            await fixture.Engine.FillAsync(nameRef, "replace-me", CancellationToken.None);
+            await fixture.Engine.SendKeysAsync(nameRef, "Ctrl+A", null, CancellationToken.None);
+            await fixture.Engine.TypeAsync(nameRef, "typed", submit: false, CancellationToken.None);
+            text = await fixture.Engine.GetTextAsync(nameRef, CancellationToken.None);
+
+            if (text == "typed")
+            {
+                return;
+            }
+
+            Assert.True(attempt < 3, $"keyboard input did not reach the app; textbox contains '{text}'");
+            await Task.Delay(300, TestContext.Current.CancellationToken);
+        }
     }
 
     [Fact]
