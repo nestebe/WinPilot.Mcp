@@ -39,47 +39,50 @@ WinPilot.Mcp gives AI agents a Playwright-style workflow for Windows desktop app
 
 ## Install
 
-### Option 1 — one-liner from GitHub (recommended)
+### Option 1 — NuGet.org (recommended)
+
+```powershell
+dotnet tool install -g WinPilot.Mcp
+```
+
+With the .NET 10 SDK you can even skip the install — `dnx` fetches and runs the tool on first use:
+
+```powershell
+dotnet dnx WinPilot.Mcp
+```
+
+The server is then available as `winpilot-mcp`, and the opencode snippet below works as-is.
+
+### Option 2 — one-liner installers from this repository
 
 ```powershell
 irm https://raw.githubusercontent.com/nestebe/WinPilot.Mcp/main/install.ps1 | iex
 ```
 
-Downloads the latest [release](https://github.com/nestebe/WinPilot.Mcp/releases) and installs the .NET tool.
-Re-run the same command to update. The server is then available as `winpilot-mcp`, and the opencode
-snippet below works as-is.
-
-> **Zero-install shortcut (coming with NuGet.org):** once the package is on NuGet.org the release
-> workflow publishes it automatically through [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
-> (no stored secrets) — then `dotnet tool install -g WinPilot.Mcp` becomes a one-liner and
-> `dotnet dnx WinPilot.Mcp` runs the server without installing anything at all.
-
-### Option 2 — manual .NET tool install
-
-1. Download `WinPilot.Mcp.<version>.nupkg` from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases).
-2. Install it from the folder you downloaded it into:
-
-```powershell
-dotnet tool install -g WinPilot.Mcp --add-source <folder-with-the-nupkg>
-```
-
-### Option 3 — self-contained executable (no .NET required)
+installs or updates the .NET tool from the latest [release](https://github.com/nestebe/WinPilot.Mcp/releases).
+For a self-contained executable (no .NET required):
 
 ```powershell
 irm https://raw.githubusercontent.com/nestebe/WinPilot.Mcp/main/install-exe.ps1 | iex
 ```
 
-Downloads the latest release, extracts `winpilot-mcp.exe` to `%LOCALAPPDATA%\WinPilot.Mcp` and prints the
-config snippet to paste. Or do it manually: download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`)
-from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases), extract it anywhere stable, and point
-your client at the exe (escape the backslashes, or use forward slashes):
+extracts `winpilot-mcp.exe` to `%LOCALAPPDATA%\WinPilot.Mcp` and prints the config snippet.
+Both scripts are re-runnable to update.
 
-```jsonc
-"mcp": { "winpilot": { "type": "local", "command": ["C:\\Tools\\WinPilot.Mcp\\winpilot-mcp.exe"] } }
-```
+### Option 3 — manual downloads
 
-To update, close the opencode session (the installer refuses to replace a running exe) and re-run the
-installer, or download the new zip and extract it over the folder.
+- **.NET tool:** download `WinPilot.Mcp.<version>.nupkg` from [Releases](https://github.com/nestebe/WinPilot.Mcp/releases)
+  and install it from the folder you downloaded it into:
+  `dotnet tool install -g WinPilot.Mcp --add-source <folder-with-the-nupkg>`
+- **Self-contained executable:** download `WinPilot.Mcp-win-x64-<version>.zip` (or `win-arm64`), extract it
+  anywhere stable, and point your client at the exe (escape the backslashes, or use forward slashes):
+
+  ```jsonc
+  "mcp": { "winpilot": { "type": "local", "command": ["C:\\Tools\\WinPilot.Mcp\\winpilot-mcp.exe"] } }
+  ```
+
+  To update it, close the opencode session (the installer refuses to replace a running exe) and re-run
+  the installer, or extract the new zip over the folder.
 
 ## Configure your MCP client
 
@@ -99,7 +102,7 @@ installer, or download the new zip and extract it over the folder.
 }
 ```
 
-Zero-install variant (after NuGet.org publication): `"command": ["dotnet", "dnx", "WinPilot.Mcp"]`.
+Zero-install variant: `"command": ["dotnet", "dnx", "WinPilot.Mcp"]`.
 
 > opencode applies a 30 s timeout to server startup and tool listing. The first `dnx` run downloads the package — if your machine is slow, raise the timeout: `"timeout": 60000`.
 

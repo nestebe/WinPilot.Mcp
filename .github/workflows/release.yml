@@ -52,7 +52,11 @@ jobs:
           user: nestebe # nuget.org profile name (not the email)
 
       - name: Publish to NuGet.org
-        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
+        run: |
+          $nupkg = Get-ChildItem artifacts -Filter '*.nupkg' | Select-Object -First 1
+          if (-not $nupkg) { throw 'Tool package not found in artifacts.' }
+          dotnet nuget push $nupkg.FullName --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish win-x64
         run: dotnet publish src/WinPilot.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
